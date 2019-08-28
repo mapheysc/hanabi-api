@@ -1,0 +1,14 @@
+nose
+pydocstyle
+flake8
+flake8-docstrings
+mock
+pycalver
+wheel
+nodeenv
+flask-cors
+sphinx
+sphinx_rtd_theme
+pymongo
+
+-e .
