@@ -16,6 +16,14 @@
 **Build a vitrual environment if you wish (highly reccommended)**
 `python -m venv hanabi`
 
+Install mongodb
+
+`brew install mongo`
+
+Start mongodb service
+
+`mongod`
+
 `cd hanabi-api && pip install -r requirements.txt`
 
 `cd hanabi-engine && pip install -r requirements.txt`
