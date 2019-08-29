@@ -25,13 +25,12 @@ class Games(flask.views.MethodView):
         if game_id is None:
             return jsonify([{'name': game['name'], 'id': str(game['_id'])} for game in rest.database.db.games.find()])
         else:
-            try:
-                game = rest.database.db.games.find_one({'_id': ObjectId(game_id)})
-                game['_id'] = game_id
-                return jsonify(game)
-            except KeyError as ke:
+            game = rest.database.db.games.find_one({'_id': ObjectId(game_id)})
+            if game is None:
                 msg = 'Game cannot be found.'
                 return abort(make_response(jsonify(message=msg), 400))
+            game['_id'] = game_id
+            return jsonify(game)
 
     def post(self):
         num_players = request.args.get('num_players')
