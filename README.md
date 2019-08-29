@@ -5,7 +5,12 @@
 - clone the repo
 - clone the hanabi-engine repo
 
-### Install Requirements
+## Documentation
+
+[Developer docs (not hosted yet)](google.com)
+[API docs (not hosted yet)](google.com)
+
+## Install Requirements
 
 **Build a vitrual environment if you wish (highly reccommended)**
 `python -m venv hanabi`
@@ -14,7 +19,7 @@
 
 `cd hanabi-engine && pip install -r requirements.txt`
 
-### Run the local flask app
+## Run the local flask app
 
 `cd hanabi-api && hanabi -s -l DEBUG`
 
