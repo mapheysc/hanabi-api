@@ -16,13 +16,11 @@ LOGGER = logging.getLogger(__name__)
 class Games(flask.views.MethodView):
     """Class containing REST methods for the ``/game`` endpoint."""
 
-    def get(self):
+    def get(self, game_id=None):
         """
         REST endpoint that gets the current state of a game with a provided id.
         """
         LOGGER.info("Hitting REST endpoint: '/game'")
-
-        game_id = request.args.get('id')
 
         if game_id is None:
             return jsonify([{'name': game['name'], 'id': str(game['_id'])} for game in rest.database.db.games.find()])
@@ -51,4 +49,8 @@ class Games(flask.views.MethodView):
         _id = games.insert_one(game.dict).inserted_id
         socket.emit_to_client('game_created', {'name': game.name, 'id': str(_id)})
         return jsonify(str(_id))
+
+    def delete(self, game_id=None):
+        rest.database.db.games.remove({'_id': ObjectId(game_id)})
+        return Response('', status=204, mimetype='application/json')
 

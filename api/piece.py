@@ -65,6 +65,9 @@ class Pieces(flask.views.MethodView):
                     rest.database.db.games.update({'_id': ObjectId(game_id)}, game.dict)
                     socket.emit_to_client('game_updated', {'id': game_id, 'game': game.dict})
                     return abort(make_response(jsonify(message=msg), 400))
+                except exc.NotPlayersTurn:
+                    msg = 'It is not your turn'
+                    return abort(make_response(jsonify(message=msg), 400))
 
                 msg = 'Successfully played piece.'
                 if piece in game.binned_pieces:

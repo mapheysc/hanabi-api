@@ -10,5 +10,6 @@ flask-cors
 sphinx
 sphinx_rtd_theme
 pymongo
+flask_restful
 
 -e .

@@ -1,8 +1,9 @@
 import flask, flask_cors
+from flask_restful import Resource, Api
 from flask_socketio import SocketIO, join_room, leave_room
 import logging
 
-from api import game
+from api.game import Games
 from api.piece import Pieces
 from api.player import Players
 from utils.database import Database
@@ -13,6 +14,8 @@ flask_cors.CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
 database = Database()
 
-app.add_url_rule(rule='/game', view_func=game.Games.as_view('game'), methods=['GET', 'POST'])
-app.add_url_rule(rule='/player/<player_id>', view_func=Players.as_view('player'))
-app.add_url_rule(rule='/piece/<piece_id>', view_func=Pieces.as_view('piece'), methods=['GET', 'POST'])
+api = Api(app)
+
+api.add_resource(Games, '/game', '/game/<game_id>', endpoint='game')
+api.add_resource(Players, '/player/<player_id>', endpoint='player')
+api.add_resource(Pieces, '/piece/<piece_id>', endpoint='piece')
