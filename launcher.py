@@ -3,17 +3,12 @@
 import logging
 import inspect
 import os
-# try:
 import flask_cors
-# except ImportError:
-#     # When running darcpy in production, it is run behind nginx.
-#     # The nginx.conf specifies CORS settings, so we don't use flask_cors
-#     pass
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-import hanabi_api.api.rest as rest
-from hanabi_api.utils.files import create_file
+import api.rest as rest
+from utils.files import create_file
 
 ROOTLOGGER = logging.getLogger(inspect.getmodule(__name__))
 LOGGER = logging.getLogger(__name__)

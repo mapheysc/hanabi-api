@@ -10,7 +10,7 @@ setup(name='Hanabi',
       packages=find_packages(),
       entry_points={
         'console_scripts': [
-            'hanabi_api = launcher:main',
+            'hanabi = launcher:main',
         ]
       },
       install_requires=[

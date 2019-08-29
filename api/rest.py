@@ -2,10 +2,10 @@ import flask, flask_cors
 from flask_socketio import SocketIO, join_room, leave_room
 import logging
 
-from hanabi_api.api import game
-from hanabi_api.api.piece import Pieces
-from hanabi_api.api.player import Players
-from hanabi_api.utils.database import Database
+from api import game
+from api.piece import Pieces
+from api.player import Players
+from utils.database import Database
 
 LOGGER = logging.getLogger(__name__)
 app = flask.Flask(__name__)
