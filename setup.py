@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 VERSION = __import__('api').__VERSION__
 
-setup(name='Hanabi',
+setup(name='Hanabi Api',
       version=VERSION,
       author='Sam Maphey',
       packages=find_packages(),

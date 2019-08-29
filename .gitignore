@@ -3,4 +3,4 @@
 *.py[cod]
 venv
 
-Hanabi.egg-info/
+*.egg-info/

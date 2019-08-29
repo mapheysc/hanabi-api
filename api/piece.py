@@ -8,8 +8,8 @@ from addict import Dict
 from bson.objectid import ObjectId
 
 from hanabi.game import Game
-from hanabi_api.utils import socket
-from hanabi_api.api import rest
+from utils import socket
+from api import rest
 import hanabi.exceptions as exc
 
 LOGGER = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
-from hanabi_api.api import rest
+from api import rest
 
 def emit_to_client(message, data=None, room=None):
     """
