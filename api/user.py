@@ -8,6 +8,7 @@ from flask import make_response, jsonify, request, Response
 from flask_restplus import abort
 import pymongo
 from bson.objectid import ObjectId
+from utils.database import remove_object_ids_from_dict
 
 from hanabi.game import Game
 from utils import socket
@@ -46,14 +47,39 @@ class Users(flask.views.MethodView):
                     else:
                         return abort(400, message='A user with this name already exists.')
             else:
-                return jsonify([user for user in rest.database.db.users.find({'game_ids': game_id})])
+                return jsonify([user for user in rest.database.db.users.find({'games': game_id})])
         else:
-            user = rest.database.db.users.find_one({'_id': ObjectId(user_id)})
-            if user is None:
+            users = []
+            for user in rest.database.db.users.aggregate([
+                {
+                    '$lookup': {
+                    'from': 'games',
+                    'localField': 'owns',
+                    'foreignField': '_id',
+                    'as': 'owns'
+                    }
+                },
+                {
+                    '$lookup': {
+                    'from': 'games',
+                    'localField': 'games',
+                    'foreignField': '_id',
+                    'as': 'games'
+                    }
+                },
+                {
+                    '$match': {
+                        '_id': ObjectId(user_id)
+                    }
+                },
+            ]):
+                user = remove_object_ids_from_dict(user)
+                users.append(user)
+
+            if len(users) == 0:
                 msg = 'User cannot be found.'
                 return abort(404, message=msg)
-            user['_id'] = user_id
-            return jsonify(user)
+            return jsonify(users[0])
 
     def post(self):
         player_name = request.args.get('player_name', 'Anonymous')
@@ -63,22 +89,26 @@ class Users(flask.views.MethodView):
                 users.append(user)
             if len(users) > 0:
                 return abort(400, 'User with that name already exists.')
-        user = {'game_ids': [], 'owns': [], 'name': player_name}
+        user = {'games': [], 'owns': [], 'name': player_name}
         _id = rest.database.db.users.insert_one(user).inserted_id
         return jsonify(str(_id))
 
     def put(self, user_id=None):
         user = rest.database.db.users.find_one({'_id': ObjectId(user_id)})
-        game_id = request.args.get('game_id')
-        own = request.args.get('own')
-        player_id = request.args.get('player_id')
-        if rest.database.db.games.find_one({'_id': ObjectId(own)}) is not None:
-            user['owns'].append({'game': own, 'player_id': player_id})
+        meta_game_id = request.args.get('meta_game_id')
+        meta_game = rest.database.db.metagames.find_one({'_id': ObjectId(meta_game_id)})
+        if meta_game is not None:
+            if len(meta_game['players']) == meta_game['num_players']:
+                return abort(400, 'Game already has max amount of players')
+            if ObjectId(user_id) in meta_game['players']:
+                return abort(400, 'You are already in the game.')
+            user['games'].append({'game': ObjectId(meta_game['game_id']), 'player_id': len(meta_game['players'])})
             rest.database.db.users.update({'_id': ObjectId(user_id)}, user)
-            return Response('', status=204, mimetype='application/json')
-        elif rest.database.db.games.find_one({'_id': ObjectId(game_id)}) is not None:
-            user['game_ids'].append({'game': game_id, 'player_id': player_id})
-            rest.database.db.users.update({'_id': ObjectId(user_id)}, user)
+            meta_game = rest.database.db.metagames.update({'_id': ObjectId(meta_game_id)}, {
+                '$addToSet': {
+                    'players': ObjectId(user_id)
+                }
+            })
             return Response('', status=204, mimetype='application/json')
         else:
             msg = 'Game cannot be found.'

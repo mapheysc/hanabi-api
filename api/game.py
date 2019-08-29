@@ -12,6 +12,7 @@ from bson.objectid import ObjectId
 from hanabi.game import Game
 from utils import socket
 from api import rest
+from utils.database import remove_object_ids_from_dict
 LOGGER = logging.getLogger(__name__)
 
 
@@ -54,20 +55,29 @@ class Games(flask.views.MethodView):
         _id = games.insert_one(game.dict).inserted_id
         rest.database.db.users.update({'_id': ObjectId(user_id)}, {
             '$addToSet': {
-                'own': str(_id)
+                'owns': ObjectId(_id)
             }
         }, upsert=False)
         rest.database.db.metagames.insert_one({
-            'game_id': str(_id),
-            'owner': user_id,
-            'num_players': num_players,
-            'players': [user_id]
+            'game_id': ObjectId(_id),
+            'turn': game.turn,
+            'game_name': game.name,
+            'num_hints': game.num_hints,
+            'num_errors': game.num_errors,
+            'owner': ObjectId(user_id),
+            'num_players': int(num_players),
+            'players': [ObjectId(user_id)]
         })
         socket.emit_to_client('game_created', {'name': game.name, 'id': str(_id)})
         return jsonify(str(_id))
 
     def delete(self, game_id=None):
-        rest.database.db.games.remove({'_id': ObjectId(game_id)})
+        if game_id is not None:
+            rest.database.db.metagames.remove({'game_id': game_id})
+            rest.database.db.games.remove({'_id': ObjectId(game_id)})
+        else:
+            rest.database.db.metagames.remove()
+            rest.database.db.games.remove()
         return Response('', status=204, mimetype='application/json')
 
 
@@ -82,8 +92,25 @@ class MetaGames(flask.views.MethodView):
 
         if meta_game_id is None:
             games = []
-            for game in rest.database.db.metagames.find():
-                game.update(_id=str(game['_id']))
+            for game in rest.database.db.metagames.aggregate([
+                {
+                    '$lookup': {
+                    'from': 'users',
+                    'localField': 'owner',
+                    'foreignField': '_id',
+                    'as': 'owner'
+                    }
+                },
+                {
+                    '$lookup': {
+                    'from': 'users',
+                    'localField': 'players',
+                    'foreignField': '_id',
+                    'as': 'players'
+                    }
+                }
+            ]):
+                game = remove_object_ids_from_dict(game)
                 games.append(game)
             return jsonify(games)
         else:
