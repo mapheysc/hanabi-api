@@ -6,6 +6,7 @@ import logging
 from api.game import Games
 from api.piece import Pieces
 from api.player import Players
+from api.user import Users
 from utils.database import Database
 
 LOGGER = logging.getLogger(__name__)
@@ -19,3 +20,4 @@ api = Api(app)
 api.add_resource(Games, '/game', '/game/<game_id>', endpoint='game')
 api.add_resource(Players, '/player/<player_id>', endpoint='player')
 api.add_resource(Pieces, '/piece/<piece_id>', endpoint='piece')
+api.add_resource(Users, '/user', '/user/<user_id>', endpoint='user')
