@@ -26,6 +26,7 @@ setup(name='Hanabi Api',
           'pymongo',
           'flask_restplus',
           'flask_restful',
+          'hanaby',
       ],
       extras_require={
           'flask_cors': [

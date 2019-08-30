@@ -1,0 +1,26 @@
+defaultEntryPoints = ["http", "https"]
+
+[entryPoints]
+  [entryPoints.dashboard]
+    address = ":8080"
+    [entryPoints.dashboard.auth]
+      [entryPoints.dashboard.auth.basic]
+        users = ["admin:$apr1$Ky9fzW3G$R6mV6IA7Tz00fQ3civJuf."]
+  [entryPoints.http]
+    address = ":80"
+      [entryPoints.http.redirect]
+        entryPoint = "https"
+  [entryPoints.https]
+    address = ":443"
+      [entryPoints.https.tls]
+            [[entryPoints.https.tls.certificates]]
+            certFile = "/cert.crt"
+            keyFile = "/cert.key"
+
+[api]
+entrypoint="dashboard"
+
+[docker]
+domain = "docker.local"
+watch = true
+exposedByDefault = false
