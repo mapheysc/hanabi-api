@@ -109,7 +109,7 @@ def main():
     if args.version:
         print(version())
     else:
-        rest.socketio.run(rest.app, host='0.0.0.0', debug=True)  # DO NOT USE IN PRODUCTION!
+        rest.socketio.run(rest.app, host='0.0.0.0', debug=True)
 
 
 if __name__ == "__main__":

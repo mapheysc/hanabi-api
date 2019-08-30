@@ -1,0 +1,10 @@
+.vscode
+*__pycache__/
+*.py[cod]
+venv
+
+*.egg-info/
+.gitignore
+.flake8
+README.md
+requirements.txt

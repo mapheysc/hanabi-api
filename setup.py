@@ -9,27 +9,30 @@ setup(name='Hanabi Api',
       author='Sam Maphey',
       packages=find_packages(),
       entry_points={
-        'console_scripts': [
-            'hanabi = launcher:main',
-        ]
+          'console_scripts': [
+              'hanabi = launcher:main',
+          ]
       },
       install_requires=[
-        'flask',
-        'flask-jwt-extended',
-        'flask-cors',
-        'gunicorn',
-        'requests',
-        'pyyaml',
-        'ldap3',
-        'flask-socketio',
-        'eventlet',
+          'flask',
+          'flask-jwt-extended',
+          'flask-cors',
+          'gunicorn',
+          'requests',
+          'pyyaml',
+          'ldap3',
+          'flask-socketio',
+          'eventlet',
+          'pymongo',
+          'flask_restplus',
+          'flask_restful',
       ],
       extras_require={
-        'flask_cors': [
-            'flask-cors',
-        ],
-        'cert_checker': [
-            'cryptography',
-        ],
+          'flask_cors': [
+              'flask-cors',
+          ],
+          'cert_checker': [
+              'cryptography',
+          ],
       },
       )

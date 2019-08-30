@@ -9,8 +9,5 @@ nodeenv
 flask-cors
 sphinx
 sphinx_rtd_theme
-pymongo
-flask_restplus
-flask_restful
 
 -e .
