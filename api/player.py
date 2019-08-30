@@ -6,6 +6,7 @@ import flask.views
 from flask import abort, make_response, jsonify, request, Response
 from addict import Dict
 from bson.objectid import ObjectId
+from flask_restplus import abort
 
 
 from hanabi.game import Game
@@ -47,10 +48,13 @@ class Players(flask.views.MethodView):
         else:
             msg = 'Game could not be found.'
             return flask.abort(make_response(jsonify(message=msg), 400))
-        player = next((p for p in players if p['id'] == int(player_id)), None)
-        if player is None:
-            msg = 'Player was not found'
-            return flask.abort(make_response(jsonify(message=msg), 400))
+        if player_id.isdigit():
+            player = next((p for p in players if p['id'] == int(player_id)), None)
+            if player is None:
+                msg = 'Player was not found'
+                return flask.abort(make_response(jsonify(message=msg), 400))
+        else:
+            return abort(400, 'Player is not an integer')
 
         return jsonify(player)
 
@@ -81,6 +85,8 @@ class Players(flask.views.MethodView):
             except exc.HintException as he:
                 msg = 'Not enough hints to give.'
                 return flask.abort(make_response(jsonify(message=msg), 400))
+            except exc.NotPlayersTurn as he:
+                return abort(400, 'Not your turn.')
             socket.emit_to_client(
                 'player_updated',
                 {

@@ -27,21 +27,21 @@ class Users(flask.views.MethodView):
 
         game_id = request.args.get('game_id')
         player_name = request.args.get('player_name', 'Anonymous')
+        aggregator = []
         if user_id is None:
             if game_id is None:
                 if player_name == 'Anonymous':
                     users = []
                     for user in rest.database.db.users.find():
-                        user.update(_id=str(user['_id']))
-                        users.append(user)
+                        users.append(remove_object_ids_from_dict(user))
                     return jsonify(users)
                 if player_name != 'Anonymous':
                     users = []
                     for user in rest.database.db.users.find({'name': player_name}):
-                        user.update(_id=str(user['_id']))
-                        users.append(user)
+                        users.append(remove_object_ids_from_dict(user))
                     if len(users) == 1:
-                        return jsonify(users[0])
+                        user = remove_object_ids_from_dict(users[0])
+                        return jsonify(user)
                     elif len(users) == 0:
                         return abort(404, message='User with that name does not exist.')
                     else:
@@ -50,29 +50,12 @@ class Users(flask.views.MethodView):
                 return jsonify([user for user in rest.database.db.users.find({'games': game_id})])
         else:
             users = []
-            for user in rest.database.db.users.aggregate([
-                {
-                    '$lookup': {
-                    'from': 'games',
-                    'localField': 'owns',
-                    'foreignField': '_id',
-                    'as': 'owns'
-                    }
-                },
-                {
-                    '$lookup': {
-                    'from': 'games',
-                    'localField': 'games',
-                    'foreignField': '_id',
-                    'as': 'games'
-                    }
-                },
-                {
-                    '$match': {
-                        '_id': ObjectId(user_id)
-                    }
-                },
-            ]):
+            aggregator.append({
+                '$match': {
+                    '_id': ObjectId(user_id)
+                }
+            })
+            for user in rest.database.db.users.aggregate(aggregator):
                 user = remove_object_ids_from_dict(user)
                 users.append(user)
 
@@ -102,7 +85,8 @@ class Users(flask.views.MethodView):
                 return abort(400, 'Game already has max amount of players')
             if ObjectId(user_id) in meta_game['players']:
                 return abort(400, 'You are already in the game.')
-            user['games'].append({'game': ObjectId(meta_game['game_id']), 'player_id': len(meta_game['players'])})
+            user['games'].append(
+                {'game': ObjectId(meta_game['game_id']), 'player_id': len(meta_game['players'])})
             rest.database.db.users.update({'_id': ObjectId(user_id)}, user)
             meta_game = rest.database.db.metagames.update({'_id': ObjectId(meta_game_id)}, {
                 '$addToSet': {

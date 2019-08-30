@@ -55,7 +55,7 @@ class Games(flask.views.MethodView):
         _id = games.insert_one(game.dict).inserted_id
         rest.database.db.users.update({'_id': ObjectId(user_id)}, {
             '$addToSet': {
-                'owns': ObjectId(_id)
+                'owns': {'game': ObjectId(_id), 'player_id': 0}
             }
         }, upsert=False)
         rest.database.db.metagames.insert_one({
