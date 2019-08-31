@@ -2,21 +2,21 @@ version: '3'
 
 services:
   mongo:
-    container_name: mongo
     image: mongo
     restart: always
+    ports:
+      - 27017:27017
 
   hanabi:
     build:
       context: ./
       dockerfile: Dockerfile
-    volumes:
-      - ./:/usr/src/app
     labels:
-      - traefik.backend=load-balancer
-      - traefik.docker.network=docker_traefik_proxy
-      - traefik.port=5000
-      - traefik.enable=true
+      - traefik.enable=false
+    networks:
+      - load_balancing
+    ports:
+      - 5000:5000
 
   nginx:
     container_name: load-balancer
@@ -29,7 +29,7 @@ services:
       - traefik.backend=load-balancer
       - traefik.loadbalancer1.frontend.rule=Host:${HOSTNAME}; PathPrefixStrip:/api/v1
       - traefik.loadbalancer2.frontend.rule=Host:${HOSTNAME}; PathPrefix:/socket.io
-      - traefik.docker.network=docker_traefik_proxy
+      - traefik.docker.network=traefik_proxy
       - traefik.port=4000
       - traefik.enable=true
     networks:
@@ -54,8 +54,8 @@ services:
     command: --docker --traefikLog.filePath="/logs/traefik.log" ${TRAEFIK_LOG_LEVEL} --traefikLog.format="json"
     labels:
       - traefik.backend=traefik
-      - traefik.frontend.rule=Host:${HOSTNAME}; PathPrefixStrip:/traefik
-      - traefik.docker.network=docker_traefik_proxy
+      - traefik.frontend.rule=Host:traefik.${HOSTNAME}
+      - traefik.docker.network=traefik_proxy
       - traefik.port=8080
       - traefik.enable=true
 
@@ -76,15 +76,11 @@ services:
         - 9000:9000
       labels:
         - traefik.backend=portainer
-        - traefik.portainer1.frontend.rule=Host:${HOSTNAME}; PathPrefixStrip:/portainer
-        - "traefik.portainer2.frontend.rule=Host:${HOSTNAME}; HeadersRegexp: X-Custom-Referer-Header, true"
-        - "traefik.portainer3.frontend.rule=Host:${HOSTNAME}; HeadersRegexp: Referer, https://${HOSTNAME}/portainer"
-        - "traefik.portainer3.frontend.rule=Host:${HOSTNAME}; HeadersRegexp: Referer, https://${HOSTNAME}/vendor.1.css"
-        - "traefik.portainer1.frontend.headers.customResponseHeaders= X-Custom-Referer-Header: true"
-        - traefik.docker.network=docker_traefik_proxy
+        - traefik.frontend.rule=Host:portainer.${HOSTNAME}
+        - traefik.docker.network=traefik_proxy
         - traefik.port=9000
         - traefik.enable=true
-      
+
 networks:
   traefik_proxy:
   load_balancing:
