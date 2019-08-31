@@ -11,76 +11,76 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    labels:
-      - traefik.enable=false
-    networks:
-      - load_balancing
+    # labels:
+    #   - traefik.enable=false
+    # networks:
+    #   - load_balancing
     ports:
       - 5000:5000
 
-  nginx:
-    container_name: load-balancer
-    image: nginx:latest
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - hanabi
-    labels:
-      - traefik.backend=load-balancer
-      - traefik.loadbalancer1.frontend.rule=Host:${HOSTNAME}; PathPrefixStrip:/api/v1
-      - traefik.loadbalancer2.frontend.rule=Host:${HOSTNAME}; PathPrefix:/socket.io
-      - traefik.docker.network=traefik_proxy
-      - traefik.port=4000
-      - traefik.enable=true
-    networks:
-      - load_balancing
-      - traefik_proxy
+#   nginx:
+#     container_name: load-balancer
+#     image: nginx:latest
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#     depends_on:
+#       - hanabi
+#     labels:
+#       - traefik.backend=load-balancer
+#       - traefik.loadbalancer1.frontend.rule=Host:${HOSTNAME}; PathPrefixStrip:/api/v1
+#       - traefik.loadbalancer2.frontend.rule=Host:${HOSTNAME}; PathPrefix:/socket.io
+#       - traefik.docker.network=traefik_proxy
+#       - traefik.port=4000
+#       - traefik.enable=true
+#     networks:
+#       - load_balancing
+#       - traefik_proxy
 
-  traefik:
-    container_name: traefik
-    image: traefik:1.7-alpine
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${TRAEFIK_TOML_PATH}:/traefik.toml
-      - ${TRAEFIK_LOG_PATH}:/logs
-      - ${TRAEFIK_CERT_PATH}:/cert.crt
-      - ${TRAEFIK_KEY_PATH}:/cert.key
-    ports:
-      - 80:80
-      - 443:443
-    networks:
-      - traefik_proxy
-    command: --docker --traefikLog.filePath="/logs/traefik.log" ${TRAEFIK_LOG_LEVEL} --traefikLog.format="json"
-    labels:
-      - traefik.backend=traefik
-      - traefik.frontend.rule=Host:traefik.${HOSTNAME}
-      - traefik.docker.network=traefik_proxy
-      - traefik.port=8080
-      - traefik.enable=true
+#   traefik:
+#     container_name: traefik
+#     image: traefik:1.7-alpine
+#     restart: always
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock
+#       - ${TRAEFIK_TOML_PATH}:/traefik.toml
+#       - ${TRAEFIK_LOG_PATH}:/logs
+#       - ${TRAEFIK_CERT_PATH}:/cert.crt
+#       - ${TRAEFIK_KEY_PATH}:/cert.key
+#     ports:
+#       - 80:80
+#       - 443:443
+#     networks:
+#       - traefik_proxy
+#     command: --docker --traefikLog.filePath="/logs/traefik.log" ${TRAEFIK_LOG_LEVEL} --traefikLog.format="json"
+#     labels:
+#       - traefik.backend=traefik
+#       - traefik.frontend.rule=Host:traefik.${HOSTNAME}
+#       - traefik.docker.network=traefik_proxy
+#       - traefik.port=8080
+#       - traefik.enable=true
 
-  portainer:
-      image: portainer/portainer
-      container_name: portainer
-      restart: always
-      environment:
-        - PGID=1000
-        - PUID=1000
-      #Automatically choose 'Manage the Docker instance where Portainer is running' by adding <--host=unix:///var/run/docker.sock> to the command
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - ${PORTAINER_DATA_PATH}:/data
-      networks:
-        - traefik_proxy
-      ports:
-        - 9000:9000
-      labels:
-        - traefik.backend=portainer
-        - traefik.frontend.rule=Host:portainer.${HOSTNAME}
-        - traefik.docker.network=traefik_proxy
-        - traefik.port=9000
-        - traefik.enable=true
+#   portainer:
+#       image: portainer/portainer
+#       container_name: portainer
+#       restart: always
+#       environment:
+#         - PGID=1000
+#         - PUID=1000
+#       #Automatically choose 'Manage the Docker instance where Portainer is running' by adding <--host=unix:///var/run/docker.sock> to the command
+#       volumes:
+#         - /var/run/docker.sock:/var/run/docker.sock
+#         - ${PORTAINER_DATA_PATH}:/data
+#       networks:
+#         - traefik_proxy
+#       ports:
+#         - 9000:9000
+#       labels:
+#         - traefik.backend=portainer
+#         - traefik.frontend.rule=Host:portainer.${HOSTNAME}
+#         - traefik.docker.network=traefik_proxy
+#         - traefik.port=9000
+#         - traefik.enable=true
 
-networks:
-  traefik_proxy:
-  load_balancing:
+# networks:
+#   traefik_proxy:
+#   load_balancing:
