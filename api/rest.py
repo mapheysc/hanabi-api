@@ -14,8 +14,8 @@ LOGGER = logging.getLogger(__name__)
 app = flask.Flask(__name__)
 flask_cors.CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
-client = MongoClient('mongodb://localhost:27017/')
-database = client.hanabi
+client = MongoClient('mongodb://mongo:27017/')
+database = client
 
 api = Api(app)
 
