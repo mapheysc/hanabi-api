@@ -26,7 +26,7 @@ def setup_arg_parser():
 
     :returns: An ``ArgumentParser`` object.
     """
-    parser = ArgumentParser(prog='hanabi',
+    parser = ArgumentParser(prog='hanabi_api',
                             description='A Flask based controller that defines'
                             ' a RESTful interface to play hanabi.',
                             formatter_class=RawTextHelpFormatter)

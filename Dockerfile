@@ -1,8 +1,9 @@
-FROM python:3.7
+FROM sammaphey/hanabi-engine:1.0.0
+
+WORKDIR /usr/src/app
 
 COPY . .
 
 RUN pip install -e .
-RUN pip install hanaby
 
-ENTRYPOINT [ "hanabi", "-s", "-l", "DEBUG" ]
+ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "--worker-class", "eventlet", "-w", "1", "launcher:rest.app"]

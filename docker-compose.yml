@@ -9,9 +9,14 @@ services:
   hanabi:
     build:
       context: ./
-      dockerfile: ./Dockerfile
+      dockerfile: Dockerfile
     volumes:
       - ./:/usr/src/app
+    labels:
+      - traefik.backend=load-balancer
+      - traefik.docker.network=docker_traefik_proxy
+      - traefik.port=5000
+      - traefik.enable=true
 
   nginx:
     container_name: load-balancer
@@ -53,6 +58,32 @@ services:
       - traefik.docker.network=docker_traefik_proxy
       - traefik.port=8080
       - traefik.enable=true
+
+  portainer:
+      image: portainer/portainer
+      container_name: portainer
+      restart: always
+      environment:
+        - PGID=1000
+        - PUID=1000
+      #Automatically choose 'Manage the Docker instance where Portainer is running' by adding <--host=unix:///var/run/docker.sock> to the command
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ${PORTAINER_DATA_PATH}:/data
+      networks:
+        - traefik_proxy
+      ports:
+        - 9000:9000
+      labels:
+        - traefik.backend=portainer
+        - traefik.portainer1.frontend.rule=Host:${HOSTNAME}; PathPrefixStrip:/portainer
+        - "traefik.portainer2.frontend.rule=Host:${HOSTNAME}; HeadersRegexp: X-Custom-Referer-Header, true"
+        - "traefik.portainer3.frontend.rule=Host:${HOSTNAME}; HeadersRegexp: Referer, https://${HOSTNAME}/portainer"
+        - "traefik.portainer3.frontend.rule=Host:${HOSTNAME}; HeadersRegexp: Referer, https://${HOSTNAME}/vendor.1.css"
+        - "traefik.portainer1.frontend.headers.customResponseHeaders= X-Custom-Referer-Header: true"
+        - traefik.docker.network=docker_traefik_proxy
+        - traefik.port=9000
+        - traefik.enable=true
       
 networks:
   traefik_proxy:

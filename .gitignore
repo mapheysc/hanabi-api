@@ -6,3 +6,6 @@ venv
 *.egg-info/
 cert.crt
 cert.key
+
+portainer/
+reverse-proxy/
