@@ -2,11 +2,10 @@ version: '3'
 
 services:
   mongo:
-    container_name: mongo
     image: mongo
     restart: always
-    networks:
-      - internal_database
+    ports:
+      - 27017:27017
 
   hanabi:
     build:
@@ -16,7 +15,8 @@ services:
       - traefik.enable=false
     networks:
       - load_balancing
-      - internal_database
+    ports:
+      - 5000:5000
 
   nginx:
     container_name: load-balancer
@@ -84,4 +84,3 @@ services:
 networks:
   traefik_proxy:
   load_balancing:
-  internal_database:

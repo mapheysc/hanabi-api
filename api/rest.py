@@ -1,3 +1,5 @@
+from pymongo import MongoClient
+from pymongo import MongoClient
 import flask, flask_cors
 from flask_restful import Resource, Api
 from flask_socketio import SocketIO, join_room, leave_room
@@ -7,13 +9,13 @@ from api.game import Games, MetaGames
 from api.piece import Pieces
 from api.player import Players
 from api.user import Users
-from utils.database import Database
 
 LOGGER = logging.getLogger(__name__)
 app = flask.Flask(__name__)
 flask_cors.CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
-database = Database()
+client = MongoClient('mongodb://localhost:27017/')
+database = client.hanabi
 
 api = Api(app)
 
