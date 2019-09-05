@@ -9,7 +9,7 @@ class Database:
 
     def __init__(self):
         """Initialize a Database instance."""
-        self.client = MongoClient(host='localhost:27017')
+        self.client = MongoClient()
         self.db = self.client.hanabi
 
 
