@@ -1,17 +1,13 @@
-"""Defines logic used for the endpoints found at ``/haiku``."""
+"""Defines logic used for the endpoints found at ``/user``."""
 import logging
-import uuid
 import flask
-import json
 import flask.views
-from flask import make_response, jsonify, request, Response
+from flask import jsonify, request, Response
 from flask_restplus import abort
-import pymongo
 from bson.objectid import ObjectId
 from utils.database import remove_object_ids_from_dict
+from flask_jwt_extended import jwt_required
 
-from hanabi.game import Game
-from utils import socket
 from api import rest
 LOGGER = logging.getLogger(__name__)
 
@@ -19,10 +15,9 @@ LOGGER = logging.getLogger(__name__)
 class Users(flask.views.MethodView):
     """Class containing REST methods for the ``/user`` endpoint."""
 
+    @jwt_required
     def get(self, user_id=None):
-        """
-        REST endpoint that gets the current state of a user with a provided id.
-        """
+        """REST endpoint that gets the current state of a user with a provided id."""
         LOGGER.info("Hitting REST endpoint: '/user'")
 
         game_id = request.args.get('game_id')
@@ -64,7 +59,9 @@ class Users(flask.views.MethodView):
                 return abort(404, message=msg)
             return jsonify(users[0])
 
+    @jwt_required
     def put(self, user_id=None):
+        """REST endpoint that updates a user."""
         user = rest.database.db.users.find_one({'_id': ObjectId(user_id)})
         meta_game_id = request.args.get('meta_game_id')
         meta_game = rest.database.db.metagames.find_one({'_id': ObjectId(meta_game_id)})
@@ -86,7 +83,9 @@ class Users(flask.views.MethodView):
             msg = 'Game cannot be found.'
             return abort(404, message=msg)
 
+    @jwt_required
     def delete(self, user_id=None):
+        """REST endpoint that deletes a user or list of users."""
         if user_id is not None:
             rest.database.db.users.remove({'_id': ObjectId(user_id)})
         else:

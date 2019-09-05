@@ -43,12 +43,16 @@ class Authenticate(flask.views.MethodView):
         if len(users) == 0:
             # create a user
             user = {'games': [], 'owns': [], 'name': username}
-            rest.database.db.users.insert_one(user)
+            _id = rest.database.db.users.insert_one(user).inserted_id
         else:
             LOGGER.info(f"User {username} alrady exists in the database.")
+            if len(users) > 1:
+                return abort(500, 'There are too many users with the same username.')
+            else:
+                _id = users[0]['_id']
 
         LOGGER.info(f"Hitting REST endpoint: '/authenticate' with user: {username}")
-        token = create_access_token(identity=username)
+        token = create_access_token(identity=str(_id))
         LOGGER.debug('Generated access token for {}: {}'.format(username,
                                                                 token))
         return flask.jsonify({'token': token})

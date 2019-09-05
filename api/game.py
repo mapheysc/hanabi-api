@@ -2,7 +2,7 @@
 import logging
 import flask
 import flask.views
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import make_response, jsonify, request, Response
 from flask_restplus import abort
 from bson.objectid import ObjectId
@@ -37,24 +37,27 @@ class Games(flask.views.MethodView):
     @jwt_required
     def post(self):
         """REST endpoint that creates a new game."""
-        num_players = request.args.get('num_players')
+        if request.get_json() is None:
+            return abort(400, 'Must conatin body with username in post request.')
+
+        num_players = request.get_json().get('num_players')
         if num_players is None:
             msg = 'Missing required arg num_players'
             return abort(400, message=msg)
-        user_id = request.args.get('user_id')
-        if user_id is None:
-            msg = 'Missing required arg user_id'
+
+        game_name = request.get_json().get('game_name', False)
+        if game_name is None:
+            msg = 'Missing required arg game_name'
             return abort(400, message=msg)
-        with_rainbow = request.args.get('with_rainbows', False)
-        game_name = request.args.get('game_name')
-        if with_rainbow.lower() == 'true':
-            with_rainbow = True
+
+        with_rainbow = request.get_json().get('with_rainbow', False)
 
         game = Game(int(num_players), with_rainbow, name=game_name)
         game.start_game()
         games = rest.database.db.games
         _id = games.insert_one(game.dict).inserted_id
-        rest.database.db.users.update({'_id': ObjectId(user_id)}, {
+        print(get_jwt_identity())
+        rest.database.db.users.update({'_id': ObjectId(get_jwt_identity())}, {
             '$addToSet': {
                 'owns': {'game': ObjectId(_id), 'player_id': 0}
             }
@@ -65,14 +68,15 @@ class Games(flask.views.MethodView):
             'game_name': game.name,
             'num_hints': game.num_hints,
             'num_errors': game.num_errors,
-            'owner': ObjectId(user_id),
+            'owner': ObjectId(get_jwt_identity()),
             'num_players': int(num_players),
-            'players': [ObjectId(user_id)]
+            'players': [ObjectId(get_jwt_identity())]
         })
         socket.emit_to_client('game_created', {'name': game.name, 'id': str(_id)})
         return jsonify(str(_id))
 
     def delete(self, game_id=None):
+        """REST endpoint that removes all or one game."""
         if game_id is not None:
             rest.database.db.metagames.remove({'game_id': game_id})
             rest.database.db.games.remove({'_id': ObjectId(game_id)})
@@ -87,9 +91,7 @@ class MetaGames(flask.views.MethodView):
 
     @jwt_required
     def get(self, meta_game_id=None):
-        """
-        REST endpoint that gets the current state of a game with a provided id.
-        """
+        """REST endpoint that gets the current state of a game with a provided id."""
         LOGGER.info("Hitting REST endpoint: '/meta/game'")
 
         if meta_game_id is None:
