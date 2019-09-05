@@ -64,18 +64,6 @@ class Users(flask.views.MethodView):
                 return abort(404, message=msg)
             return jsonify(users[0])
 
-    def post(self):
-        player_name = request.args.get('player_name', 'Anonymous')
-        if player_name != 'Anonymous':
-            users = []
-            for user in rest.database.db.users.find({'name': player_name}):
-                users.append(user)
-            if len(users) > 0:
-                return abort(400, 'User with that name already exists.')
-        user = {'games': [], 'owns': [], 'name': player_name}
-        _id = rest.database.db.users.insert_one(user).inserted_id
-        return jsonify(str(_id))
-
     def put(self, user_id=None):
         user = rest.database.db.users.find_one({'_id': ObjectId(user_id)})
         meta_game_id = request.args.get('meta_game_id')

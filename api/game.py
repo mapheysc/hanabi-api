@@ -1,12 +1,10 @@
 """Defines logic used for the endpoints found at ``/haiku``."""
 import logging
-import uuid
 import flask
-import json
 import flask.views
-from flask import abort, make_response, jsonify, request, Response
+from flask_jwt_extended import jwt_required
+from flask import make_response, jsonify, request, Response
 from flask_restplus import abort
-import pymongo
 from bson.objectid import ObjectId
 
 from hanabi.game import Game
@@ -19,14 +17,15 @@ LOGGER = logging.getLogger(__name__)
 class Games(flask.views.MethodView):
     """Class containing REST methods for the ``/game`` endpoint."""
 
+    @jwt_required
     def get(self, game_id=None):
-        """
-        REST endpoint that gets the current state of a game with a provided id.
-        """
+        """REST endpoint that gets the current state of a game with a provided id."""
         LOGGER.info("Hitting REST endpoint: '/game'")
 
         if game_id is None:
-            return jsonify([{'name': game['name'], 'id': str(game['_id'])} for game in rest.database.db.games.find()])
+            return jsonify([{
+                'name': game['name'], 'id': str(game['_id'])
+                } for game in rest.database.db.games.find()])
         else:
             game = rest.database.db.games.find_one({'_id': ObjectId(game_id)})
             if game is None:
@@ -35,7 +34,9 @@ class Games(flask.views.MethodView):
             game['_id'] = game_id
             return jsonify(game)
 
+    @jwt_required
     def post(self):
+        """REST endpoint that creates a new game."""
         num_players = request.args.get('num_players')
         if num_players is None:
             msg = 'Missing required arg num_players'
@@ -44,7 +45,7 @@ class Games(flask.views.MethodView):
         if user_id is None:
             msg = 'Missing required arg user_id'
             return abort(400, message=msg)
-        with_rainbow = request.args.get('with_rainbows', '')
+        with_rainbow = request.args.get('with_rainbows', False)
         game_name = request.args.get('game_name')
         if with_rainbow.lower() == 'true':
             with_rainbow = True
@@ -84,6 +85,7 @@ class Games(flask.views.MethodView):
 class MetaGames(flask.views.MethodView):
     """Class containing REST methods for the ``/meta/game`` endpoint."""
 
+    @jwt_required
     def get(self, meta_game_id=None):
         """
         REST endpoint that gets the current state of a game with a provided id.

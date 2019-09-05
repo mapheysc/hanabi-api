@@ -1,0 +1,5 @@
+# Be sure to copy this file into a new one called config.yml.
+# Update the necessary fields accordingly
+flask:
+    JWT_ACCESS_TOKEN_EXPIRES_HOURS: 2048
+    secret: this_is_a_fake_secret

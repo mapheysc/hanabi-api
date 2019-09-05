@@ -1,4 +1,12 @@
 from bson.objectid import ObjectId
+from pymongo import MongoClient
+
+
+class Database:
+
+    def __init__(self):
+        self.client = MongoClient(host='localhost:27017')
+        self.db = self.client.hanabi
 
 
 def remove_object_ids_from_dict(di):
