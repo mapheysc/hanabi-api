@@ -81,6 +81,7 @@ class Games(flask.views.MethodView):
             print(game_id)
             rest.database.db.metagames.remove({'game_id': ObjectId(game_id)})
             rest.database.db.games.remove({'_id': ObjectId(game_id)})
+            socket.emit_to_client('game_deleted', game_id)
         else:
             rest.database.db.metagames.remove()
             rest.database.db.games.remove()
