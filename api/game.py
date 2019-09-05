@@ -56,7 +56,6 @@ class Games(flask.views.MethodView):
         game.start_game()
         games = rest.database.db.games
         _id = games.insert_one(game.dict).inserted_id
-        print(get_jwt_identity())
         rest.database.db.users.update({'_id': ObjectId(get_jwt_identity())}, {
             '$addToSet': {
                 'owns': {'game': ObjectId(_id), 'player_id': 0}
@@ -78,9 +77,18 @@ class Games(flask.views.MethodView):
     def delete(self, game_id=None):
         """REST endpoint that removes all or one game."""
         if game_id is not None:
-            print(game_id)
             rest.database.db.metagames.remove({'game_id': ObjectId(game_id)})
             rest.database.db.games.remove({'_id': ObjectId(game_id)})
+            users = []
+            for user in rest.database.db.users.find({'owns.game': ObjectId(game_id)}):
+                users.append(remove_object_ids_from_dict(user))
+            for user in users:
+                for i, game in enumerate(user['owns']):
+                    if game['game'] == game_id:
+                        del user['owns'][i]
+                user_without_id = {k: v for k, v in user.items() if k != '_id'}
+                rest.database.db.users.update({'_id': ObjectId(user['_id'])}, user_without_id)
+
             socket.emit_to_client('game_deleted', game_id)
         else:
             rest.database.db.metagames.remove()
