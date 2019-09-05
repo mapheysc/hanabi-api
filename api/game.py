@@ -78,7 +78,8 @@ class Games(flask.views.MethodView):
     def delete(self, game_id=None):
         """REST endpoint that removes all or one game."""
         if game_id is not None:
-            rest.database.db.metagames.remove({'game_id': game_id})
+            print(game_id)
+            rest.database.db.metagames.remove({'game_id': ObjectId(game_id)})
             rest.database.db.games.remove({'_id': ObjectId(game_id)})
         else:
             rest.database.db.metagames.remove()
