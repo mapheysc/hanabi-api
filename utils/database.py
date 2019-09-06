@@ -14,9 +14,12 @@ class Database:
         """Initialize a Database instance."""
         # self.client = {'hanabi': None}
         # self.db = self.client['hanabi']
-        self.client = MongoClient(host=['mongodb://mongo_db:27017'])
+        LOGGER.critical(f'Creating database')
+        self.client = MongoClient('mongodb://mongo_db:27017', username='root', password='example',
+                                  authSource="admin")
+        LOGGER.critical(f'Creating client')
         self.db = self.client.hanabi
-        LOGGER.debug(f'Created Mongo connection')
+        LOGGER.critical(f'Created Mongo connection')
 
 
 def remove_object_ids_from_dict(di):

@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 LOG_FORMAT = "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - " \
              "%(levelname)s - %(message)s"
 DEFAULT_LOG_PATH = os.path.join(os.path.expanduser('~'), '.hanabi/hanabi.log')
-DEFAULT_LOG_LEVEL = 'WARNING'
+DEFAULT_LOG_LEVEL = 'DEBUG'
 
 __VERSION__ = __import__('api').get_version()
 

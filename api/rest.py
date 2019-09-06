@@ -21,6 +21,7 @@ CONFIG = Config()
 app = flask.Flask(__name__)
 flask_cors.CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
+LOGGER.critical(f'Here')
 database = Database()
 app.config['JWT_SECRET_KEY'] = CONFIG['flask']['secret']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(

@@ -2,33 +2,45 @@ version: '3'
 
 services:
   mongo:
-    container_name: mongo_db
-    image: mongo
-    restart: always
-    networks:
-      - internal_database
+   container_name: mongo_db
+   image: mongo:latest
+   restart: always
+   environment:
+     MONGO_INITDB_ROOT_USERNAME: root
+     MONGO_INITDB_ROOT_PASSWORD: example
+   networks:
+     - internal_database
+   ports:
+     - 27017:27017
 
   hanabi:
     build:
       context: ./
       dockerfile: Dockerfile
+    container_name: hanabi
     depends_on:
       - mongo
     labels:
       - traefik.backend=hanabi
-      - traefik.loadbalancer1.frontend.rule=Host:${HOSTNAME}; PathPrefixStrip:/api/v1
-      - traefik.loadbalancer2.frontend.rule=Host:${HOSTNAME}; PathPrefix:/socket.io
+      - traefik.frontend.rule=Host:hanabi.${HOSTNAME}
+      - traefik.docker.network=traefik_proxy
       - traefik.port=5000
       - traefik.enable=true
+      # - traefik.backend=hanabi
+      # - traefik.frontend.rule=Host:api.${HOSTNAME}
+      # - traefik.loadbalancer2.frontend.rule=Host:api.${HOSTNAME}; PathPrefix:/socket.io
+      # - traefik.port=5000
+      # - traefik.enable=true
+      # - traefik.docker.network=traefik_proxy
     networks:
       - internal_database
       - traefik_proxy
-    ports:
-      - 5000:5000
+    # ports:
+    #   - 5000:5000
 
   traefik:
     container_name: traefik
-    image: traefik:1.7-alpine
+    image: traefik:latest
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
