@@ -1,7 +1,10 @@
 """Defines utils functions for common database operations."""
 
+import logging
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Database:
@@ -9,8 +12,11 @@ class Database:
 
     def __init__(self):
         """Initialize a Database instance."""
-        self.client = MongoClient()
+        # self.client = {'hanabi': None}
+        # self.db = self.client['hanabi']
+        self.client = MongoClient(host=['mongodb://mongo_db:27017'])
         self.db = self.client.hanabi
+        LOGGER.debug(f'Created Mongo connection')
 
 
 def remove_object_ids_from_dict(di):

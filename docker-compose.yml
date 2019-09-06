@@ -5,8 +5,6 @@ services:
     container_name: mongo_db
     image: mongo
     restart: always
-    ports:
-      - 27017:27017
     networks:
       - internal_database
 
@@ -25,6 +23,8 @@ services:
     networks:
       - internal_database
       - traefik_proxy
+    ports:
+      - 5000:5000
 
   traefik:
     container_name: traefik

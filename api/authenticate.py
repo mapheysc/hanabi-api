@@ -33,6 +33,7 @@ class Authenticate(flask.views.MethodView):
             return abort(400, 'Must conatin body with username in post request.')
 
         username = request.get_json().get('username')
+        LOGGER.debug(f'Creating auth token for {username}')
 
         if username is None:
             return abort(400, 'Username must be present in body.')
@@ -45,7 +46,7 @@ class Authenticate(flask.views.MethodView):
             user = {'games': [], 'owns': [], 'name': username}
             _id = rest.database.db.users.insert_one(user).inserted_id
         else:
-            LOGGER.info(f"User {username} alrady exists in the database.")
+            LOGGER.info(f"User {username} already exists in the database.")
             if len(users) > 1:
                 return abort(500, 'There are too many users with the same username.')
             else:

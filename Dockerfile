@@ -6,4 +6,5 @@ COPY . .
 
 RUN pip install -e .
 
-ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "--worker-class", "eventlet", "--log-level", "debug", "-w", "1", "launcher:rest.app"]
+# ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "--worker-class", "eventlet", "--log-level", "debug", "-w", "1", "launcher:rest.app"]
+ENTRYPOINT [ "hanabi_api", "-s", "-l", "DEBUG" ]
