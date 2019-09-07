@@ -1,4 +1,4 @@
-"""Defines the version of DarcPy."""
+"""Defines the version of Hanabi."""
 
 import logging
 import subprocess
@@ -6,7 +6,7 @@ import os
 
 LOGGER = logging.getLogger(__name__)
 
-__VERSION__ = "19.08.0"
+__VERSION__ = "1.0.0"
 
 
 def get_version():

@@ -5,15 +5,22 @@ import flask.views
 from flask import jsonify, request, Response
 from flask_restplus import abort
 from bson.objectid import ObjectId
-from utils.database import remove_object_ids_from_dict
 from flask_jwt_extended import jwt_required
 
-from api import rest
+from hanabiapi.utils.database import remove_object_ids_from_dict
+from hanabiapi.api import rest
+
+from hanabiapi.datastores.mongo.factory import DAOFactory
+
 LOGGER = logging.getLogger(__name__)
 
 
 class Users(flask.views.MethodView):
     """Class containing REST methods for the ``/user`` endpoint."""
+
+    def __init__(self):
+        """Init attributes for a ``Users`` object."""
+        self.dao = DAOFactory().create_user_dao()
 
     @jwt_required
     def get(self, user_id=None):

@@ -7,8 +7,8 @@ from flask import request
 from flask_restplus import abort
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
-from api import rest
-from api.config.config import Config
+from hanabiapi.api import rest
+from hanabiapi.api.config.config import Config
 
 LOGGER = logging.getLogger(__name__)
 

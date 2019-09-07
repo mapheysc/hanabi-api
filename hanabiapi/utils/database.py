@@ -4,7 +4,10 @@ import logging
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 
+from hanabiapi.api.config.config import Config
+
 LOGGER = logging.getLogger(__name__)
+CONFIG = Config()
 
 
 class Database:
@@ -14,12 +17,25 @@ class Database:
         """Initialize a Database instance."""
         # self.client = {'hanabi': None}
         # self.db = self.client['hanabi']
-        LOGGER.critical(f'Creating database')
-        self.client = MongoClient('mongodb://mongo_db:27017', username='root', password='example',
-                                  authSource="admin")
-        LOGGER.critical(f'Creating client')
+        LOGGER.debug(f'Creating database')
+        DATABASE_CONFIG = CONFIG['database']
+        auth = {}
+        LOGGER.debug(f'Setting up authentication')
+        try:
+            auth = {
+                'username': DATABASE_CONFIG['username'],
+                'password': DATABASE_CONFIG['password'],
+                'authSource': DATABASE_CONFIG['auth']
+            }
+            LOGGER.debug(f'Using authentication')
+        except KeyError:
+            # Not using authentication
+            LOGGER.debug(f'No authentication')
+            pass
+        self.client = MongoClient(DATABASE_CONFIG['url'], **auth)
+        LOGGER.debug(f'Creating client')
         self.db = self.client.hanabi
-        LOGGER.critical(f'Created Mongo connection')
+        LOGGER.debug(f'Created Mongo connection')
 
 
 def remove_object_ids_from_dict(di):

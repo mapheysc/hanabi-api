@@ -3,3 +3,9 @@
 flask:
     JWT_ACCESS_TOKEN_EXPIRES_HOURS: 2048
     secret: this_is_a_fake_secret
+database:
+    # url: mongodb://mongo_db:27017
+    url: localhost:27017
+    # username: root
+    # password: password
+    # auth: admin

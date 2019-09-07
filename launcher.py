@@ -3,12 +3,12 @@
 import logging
 import inspect
 import os
-import flask_cors
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-import api.rest as rest
-from utils.files import create_file
+import hanabiapi.api.rest as rest
+from hanabiapi.utils import files
+from hanabiapi.api.config.config import Config
 
 ROOTLOGGER = logging.getLogger(inspect.getmodule(__name__))
 LOGGER = logging.getLogger(__name__)
@@ -16,8 +16,21 @@ LOG_FORMAT = "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - " \
              "%(levelname)s - %(message)s"
 DEFAULT_LOG_PATH = os.path.join(os.path.expanduser('~'), '.hanabi/hanabi.log')
 DEFAULT_LOG_LEVEL = 'DEBUG'
+CONFIG = Config()
 
-__VERSION__ = __import__('api').get_version()
+__VERSION__ = __import__('hanabiapi').get_version()
+
+
+def check_for_config_file():
+    """
+    Ensure that a config.yml file is present.
+
+    Exit build if config file not found
+    """
+    if 'config-sample.yml' in CONFIG.config_file:
+        LOGGER.critical('Config file not found, '
+                        'please copy config-sample.yml to config.yml')
+        exit()
 
 
 def setup_arg_parser():
@@ -57,7 +70,7 @@ def setup_logging(args):
     else:
         loglevel = DEFAULT_LOG_LEVEL
 
-    create_file(logpath)
+    files.create_file(logpath)
 
     formatter = logging.Formatter(LOG_FORMAT)
     ROOTLOGGER.setLevel(loglevel)
@@ -105,6 +118,7 @@ def main():
     parser = setup_arg_parser()
     args = parser.parse_args()
     setup_logging(args)
+    check_for_config_file()
     LOGGER.debug('Logging successfully setup.')
     if args.version:
         print(version())

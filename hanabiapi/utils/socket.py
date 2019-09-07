@@ -1,8 +1,10 @@
+"""Utility functions for sockets."""
 import logging
+
+from hanabiapi.api import rest
 
 LOGGER = logging.getLogger(__name__)
 
-from api import rest
 
 def emit_to_client(message, data=None, room=None):
     """

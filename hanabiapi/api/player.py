@@ -8,14 +8,12 @@ from addict import Dict
 from bson.objectid import ObjectId
 from flask_restplus import abort
 from flask_jwt_extended import jwt_required
-
-
+import hanabi.exceptions as exc
 from hanabi.game import Game
 from hanabi.piece import Color
-from utils import socket
-from api import rest
 
-import hanabi.exceptions as exc
+from hanabiapi.utils import socket
+from hanabiapi.api import rest
 
 LOGGER = logging.getLogger(__name__)
 
