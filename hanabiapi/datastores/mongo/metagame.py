@@ -67,13 +67,21 @@ class MongoMetaGameDAO(MetaGameDAO):
         """
         raise NotImplementedError
 
-    def delete(self, id=None):
+    def delete(self, _id=None, match=None):
         """
         Delete a meta game.
 
         If id is None delete all meta games.
 
         :param id: The id of the meta game to delete.
+        :param match: A dictionary with which to delete metagames.
+            Deletes them by matching the keys with values that exist
+            in all metagames.
         :returns: None.
         """
-        raise NotImplementedError
+        if _id is None and match is None:
+            rest.database.db.metagames.remove()
+        elif _id is not None:
+            rest.database.db.metagames.remove({'_id': ObjectId(_id)})
+        else:
+            rest.database.db.metagames.remove(match)

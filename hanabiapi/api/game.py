@@ -170,7 +170,11 @@ class Games(flask.views.MethodView):
         game.start_game()
 
         LOGGER.debug("Inserting game into database.")
-        _id = self.dao.create(get_jwt_identity(), game.dict)
+        try:
+            _id = self.dao.create(get_jwt_identity(), game.dict)
+        except exceptions.UserNotFound as unf:
+            LOGGER.debug(unf.message)
+            return abort(404, message=unf.message)
 
         socket.emit_to_client('game_created', {'name': game.name, 'id': str(_id)})
         return jsonify(_id)
@@ -178,18 +182,7 @@ class Games(flask.views.MethodView):
     def delete(self, game_id=None):
         """REST endpoint that removes all or one game."""
         if game_id is not None:
-            rest.database.db.metagames.remove({'game_id': ObjectId(game_id)})
-            rest.database.db.games.remove({'_id': ObjectId(game_id)})
-            users = []
-            for user in rest.database.db.users.find({'owns.game': ObjectId(game_id)}):
-                users.append(remove_object_ids_from_dict(user))
-            for user in users:
-                for i, game in enumerate(user['owns']):
-                    if game['game'] == game_id:
-                        del user['owns'][i]
-                user_without_id = {k: v for k, v in user.items() if k != '_id'}
-                rest.database.db.users.update({'_id': ObjectId(user['_id'])}, user_without_id)
-
+            self.dao.delete(get_jwt_identity(), game_id)
             socket.emit_to_client('game_deleted', game_id)
         else:
             rest.database.db.metagames.remove()

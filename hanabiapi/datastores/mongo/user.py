@@ -3,8 +3,10 @@ import logging
 from bson.objectid import ObjectId
 
 from hanabiapi.api import rest
-
+from hanabiapi.exceptions import UserNotFound
 from hanabiapi.datastores.dao import UserDAO
+
+from hanabiapi.utils.database import remove_object_ids_from_dict
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,9 +24,12 @@ class MongoUserDAO(UserDAO):
         :param kwargs: Keyword arguments to specify how to search.
         :returns: A list of users that match to search criteria.
         """
-        raise NotImplementedError
+        users = []
+        for user in rest.database.db.users.find(kwargs):
+            users.append(remove_object_ids_from_dict(user))
+        return users
 
-    def read(self, id=None):
+    def read(self, _id=None):
         """
         Read a user.
 
@@ -41,7 +46,16 @@ class MongoUserDAO(UserDAO):
 
                 A list of users.
         """
-        raise NotImplementedError
+        LOGGER.debug('Reading user data.')
+        if _id is None:
+            raise NotImplementedError
+        else:
+            user = rest.database.db.users.find_one({'_id': ObjectId(_id)})
+
+            if user is None:
+                raise UserNotFound
+
+            return user
 
     def create(self, game):
         """
@@ -52,15 +66,25 @@ class MongoUserDAO(UserDAO):
         """
         raise NotImplementedError
 
-    def update(self, _id, user=None):
+    def update(self, _id, user=None, as_model=False):
         """
         Update a user.
 
         :param id: The id of the user to update.
-        :param user: A ``UserModel``.
+        :param user: A dictionary representation of a user.
+        :param as_model: A ``UserModel`` representation of a user.
         :returns: None.
         """
-        return UserModel(_id, user)
+        self.read(_id=_id)
+
+        if as_model and user is not None:
+            raise AttributeError('Cannot specify both user and as_model.')
+        elif as_model:
+            return UserModel(_id, user)
+        else:
+            # Remove _id because mongo doesn't like
+            user = {k: v for k, v in user.items() if k != '_id'}
+            rest.database.db.users.update({'_id': ObjectId(_id)}, user)
 
     def delete(self, id=None):
         """
