@@ -3,7 +3,10 @@ import logging
 from bson.objectid import ObjectId
 
 from hanabiapi.api import rest
+from hanabiapi import exceptions
 from hanabiapi.datastores.dao import MetaGameDAO
+from hanabiapi.utils.database import remove_object_ids_from_dict
+from hanabiapi.datastores.mongo import utils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +26,8 @@ class MongoMetaGameDAO(MetaGameDAO):
         """
         raise NotImplementedError
 
-    def read(self, id=None):
+    @utils.check_object_id('meta game')
+    def read(self, _id=None):
         """
         Read a meta game.
 
@@ -40,7 +44,42 @@ class MongoMetaGameDAO(MetaGameDAO):
 
                 A list of meta games.
         """
-        raise NotImplementedError
+        lookup_owner = {
+            '$lookup': {
+                'from': 'users',
+                'localField': 'owner',
+                'foreignField': '_id',
+                'as': 'owner'
+            }
+        }
+        lookup_players = {
+            '$lookup': {
+                'from': 'users',
+                'localField': 'players',
+                'foreignField': '_id',
+                'as': 'players'
+            }
+        }
+        match = {
+            '$match': {
+                '_id': ObjectId(_id),
+            }
+        }
+        pipelines = [lookup_owner, lookup_players]
+        if _id is not None:
+            metagames = rest.database.db.metagames.find_one({'_id': ObjectId(_id)})
+            if metagames is None:
+                raise exceptions.MetaGameNotFound()
+            pipelines.append(match)
+        games = []
+        for game in rest.database.db.metagames.aggregate(pipelines):
+            game = remove_object_ids_from_dict(game)
+            game['owner'] = game['owner'][0]
+            games.append(game)
+
+        if _id is not None:
+            return games[0]
+        return games
 
     def create(self, meta_game):
         """
@@ -57,7 +96,8 @@ class MongoMetaGameDAO(MetaGameDAO):
 
         return rest.database.db.metagames.insert_one(meta_game).inserted_id
 
-    def update(self, id, meta_game):
+    @utils.check_object_id('meta game')
+    def update(self, _id, meta_game):
         """
         Update a meta game.
 
@@ -67,6 +107,7 @@ class MongoMetaGameDAO(MetaGameDAO):
         """
         raise NotImplementedError
 
+    @utils.check_object_id('meta game')
     def delete(self, _id=None, match=None):
         """
         Delete a meta game.

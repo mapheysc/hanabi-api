@@ -88,6 +88,20 @@ class GameNotFound(NotFound):
         super().__init__('game', message=message, *args, **kwargs)
 
 
+class MetaGameNotFound(NotFound):
+    """Raised if a meta game cannot be found."""
+
+    def __init__(self, message=None, *args, **kwargs):
+        """
+        Initialize a ``MetaGameNotFound`` exception.
+
+        :param message: A helpful message the exception should contain.
+        :param args: Any additional args to attach to the exception.
+        :param kwargs: Any additional kwargs to attach to the exception.
+        """
+        super().__init__('meta game', message=message, *args, **kwargs)
+
+
 class UserNotFound(NotFound):
     """Raised if a user cannot be found."""
 

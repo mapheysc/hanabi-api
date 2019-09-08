@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from hanabiapi.api import rest
 from hanabiapi.exceptions import UserNotFound
 from hanabiapi.datastores.dao import UserDAO
+from hanabiapi.datastores.mongo import utils
 
 from hanabiapi.utils.database import remove_object_ids_from_dict
 
@@ -29,6 +30,7 @@ class MongoUserDAO(UserDAO):
             users.append(remove_object_ids_from_dict(user))
         return users
 
+    @utils.check_object_id('user')
     def read(self, _id=None):
         """
         Read a user.
@@ -66,6 +68,7 @@ class MongoUserDAO(UserDAO):
         """
         raise NotImplementedError
 
+    @utils.check_object_id('user')
     def update(self, _id, user=None, as_model=False):
         """
         Update a user.
@@ -86,7 +89,8 @@ class MongoUserDAO(UserDAO):
             user = {k: v for k, v in user.items() if k != '_id'}
             rest.database.db.users.update({'_id': ObjectId(_id)}, user)
 
-    def delete(self, id=None):
+    @utils.check_object_id('user')
+    def delete(self, _id=None):
         """
         Delete a user.
 

@@ -7,6 +7,7 @@ import hanabiapi.exceptions as exceptions
 from hanabiapi.datastores.dao import GameDAO
 from hanabiapi.datastores.mongo.user import MongoUserDAO
 from hanabiapi.datastores.mongo.metagame import MongoMetaGameDAO
+from hanabiapi.datastores.mongo import utils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ class MongoGameDAO(GameDAO):
         """
         raise NotImplementedError
 
+    @utils.check_object_id('game')
     def read(self, _id=None):
         """
         Read a game.
@@ -98,7 +100,8 @@ class MongoGameDAO(GameDAO):
 
         return str(_id)
 
-    def update(self, id, game):
+    @utils.check_object_id('game')
+    def update(self, _id, game):
         """
         Update a game.
 
@@ -109,6 +112,7 @@ class MongoGameDAO(GameDAO):
         """
         raise NotImplementedError
 
+    @utils.check_object_id('game')
     def delete(self, user, _id=None, match=None):
         """
         Delete a game.

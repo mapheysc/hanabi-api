@@ -5,13 +5,10 @@ import flask.views
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import jsonify, Response
 from flask_restplus import abort
-from bson.objectid import ObjectId
 
 from hanabi.game import Game
 from hanabiapi.utils import socket
-from hanabiapi.api import rest
 from hanabiapi import decorators
-from hanabiapi.utils.database import remove_object_ids_from_dict
 from hanabiapi.utils.rest import get_body
 import hanabiapi.exceptions as exceptions
 
@@ -180,51 +177,117 @@ class Games(flask.views.MethodView):
         return jsonify(_id)
 
     def delete(self, game_id=None):
-        """REST endpoint that removes all or one game."""
+        """
+        REST endpoint that deletes all or a single game.
+
+        This is a ``@jwt_required`` protected endpoint.
+
+        :param game_id: The id of the game to delete.
+
+        :returns: A ``flask.Response`` object that contains one of the following:
+
+            - If game successfully deleted:
+
+                ``204`` status code:
+
+            - If unauthorized (invalid JWT):
+
+                ``401`` status code and a body containing a message stating the user is not
+                authorized.
+        """
         if game_id is not None:
-            self.dao.delete(get_jwt_identity(), game_id)
+            self.dao.delete(get_jwt_identity(), _id=game_id)
             socket.emit_to_client('game_deleted', game_id)
         else:
-            rest.database.db.metagames.remove()
-            rest.database.db.games.remove()
+            # Delete all games
+            self.dao.delete(get_jwt_identity())
         return Response('', status=204, mimetype='application/json')
 
 
 class MetaGames(flask.views.MethodView):
     """Class containing REST methods for the ``/meta/game`` endpoint."""
 
+    def __init__(self):
+        """Init attributes for a ``MetaGames`` object."""
+        self.dao = DAOFactory().create_meta_game_dao()
+
     @jwt_required
     def get(self, meta_game_id=None):
-        """REST endpoint that gets the current state of a game with a provided id."""
+        """
+        REST endpoint that gets a meta game with a provided id or a list of all meta games.
+
+        This is a ``@jwt_required`` protected endpoint.
+
+        :param meta_game_id: Id of the meta game to get.
+
+        :returns: A ``flask.Response`` object that contains one of the following:
+
+            - If successfully retrieved and meta_game_id is not specified:
+
+                ``200`` status code and a body containing a list of meta games with the
+                    following form:
+
+                .. code-block:: json
+
+                [
+                    {
+                        "_id": "-- some valid meta game id--",
+                        "game_id": "-- some valid game id--",
+                        "game_name": "-- the name of the game--",
+                        "num_errors": "-- the number of errors as an integer--",
+                        "num_hints": "-- the number of hints as an integer--",
+                        "num_players": "-- the number of players the game needs to start--",
+                        "owner": [
+                            "-- the owner of the game --"
+                        ],
+                        "players": [
+                            "-- the players in the game --"
+                        ],
+                        "turn": "-- an integer representing how many turns have been taken in
+                                    the game--"
+                    }
+                ]
+
+            - If successfully retrieved and meta_game_id is specified:
+
+                ``200`` status code and a body containing a single meta game of this form:
+
+                .. code-block:: json
+
+                {
+                    "_id": "-- some valid meta game id--",
+                    "game_id": "-- some valid game id--",
+                    "game_name": "-- the name of the game--",
+                    "num_errors": "-- the number of errors as an integer--",
+                    "num_hints": "-- the number of hints as an integer--",
+                    "num_players": "-- the number of players the game needs to start--",
+                    "owner": "-- the owner of the game --",
+                    "players": [
+                        "-- the players in the game --"
+                    ],
+                    "turn": "-- an integer representing how many turns have been taken in
+                                the game--"
+                }
+
+            - If ``game_id`` cannot be found:
+
+                ``404`` status code.
+
+            - If unauthorized (invalid JWT):
+
+                ``401`` status code and a body containing a message stating the user is not
+                authorized.
+        """
         LOGGER.info("Hitting REST endpoint: '/meta/game'")
 
-        if meta_game_id is None:
-            games = []
-            for game in rest.database.db.metagames.aggregate([
-                {
-                    '$lookup': {
-                    'from': 'users',
-                    'localField': 'owner',
-                    'foreignField': '_id',
-                    'as': 'owner'
-                    }
-                },
-                {
-                    '$lookup': {
-                    'from': 'users',
-                    'localField': 'players',
-                    'foreignField': '_id',
-                    'as': 'players'
-                    }
-                }
-            ]):
-                game = remove_object_ids_from_dict(game)
-                games.append(game)
-            return jsonify(games)
+        if meta_game_id is not None:
+            try:
+                meta_games = self.dao.read(_id=meta_game_id)
+            except exceptions.NotFound as nf:
+                LOGGER.debug(nf.message)
+                return abort(404, message=nf.message)
+
+            return jsonify(meta_games)
         else:
-            game = rest.database.db.metagames.find_one({'_id': ObjectId(meta_game_id)})
-            if game is None:
-                msg = 'Game cannot be found.'
-                return abort(400, msg)
-            game['_id'] = meta_game_id
-            return jsonify(game)
+            meta_games = self.dao.read()
+            return jsonify(meta_games)
