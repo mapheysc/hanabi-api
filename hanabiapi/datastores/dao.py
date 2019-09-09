@@ -10,6 +10,17 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 
+class UtilsDAO(object):
+    """The DAO responseible for handling necessary utility functions."""
+
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def populate(obj):
+        """Replace any reference field with a json representation."""
+        raise NotImplementedError
+
+
 class GameDAO(object):
     """The DAO responseible for handling ``Game`` objects."""
 

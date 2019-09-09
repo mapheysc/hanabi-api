@@ -11,6 +11,7 @@ from hanabiapi.utils import socket
 from hanabiapi import decorators
 from hanabiapi.utils.rest import get_body
 import hanabiapi.exceptions as exceptions
+from hanabiapi.utils.database import populate
 
 from hanabiapi.datastores.mongo.factory import DAOFactory
 
@@ -283,6 +284,7 @@ class MetaGames(flask.views.MethodView):
         if meta_game_id is not None:
             try:
                 meta_games = self.dao.read(_id=meta_game_id)
+                print(populate(meta_games))
             except exceptions.NotFound as nf:
                 LOGGER.debug(nf.message)
                 return abort(404, message=nf.message)

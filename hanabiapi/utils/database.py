@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from pymongo import MongoClient
 
 from hanabiapi.api.config.config import Config
+from hanabiapi.datastores.dao import UtilsDAO
 
 LOGGER = logging.getLogger(__name__)
 CONFIG = Config()
@@ -36,6 +37,29 @@ class Database:
         LOGGER.debug(f'Creating client')
         self.db = self.client.hanabi
         LOGGER.debug(f'Created Mongo connection')
+
+
+def populate(obj, fields=[], depth=1):
+    """
+    Replace any reference fields with a json representation.
+
+    :param obj: The object to iterate through.
+    :param fields: The fields to populate.
+    :param depth: The depth to populate to.
+    :returns: A new dict with each of the specified fields populated.
+    """
+    _depth = 0
+    for key, value in obj.items():
+        if len(fields) == 0:
+            obj[key] = UtilsDAO().populate(obj[key])
+        else:
+            if key in fields:
+                obj[key] = UtilsDAO().populate(obj[key])
+        _depth += 1
+    if _depth != depth:
+        populate(obj, depth=depth-1)
+    else:
+        return obj
 
 
 def remove_object_ids_from_dict(di):

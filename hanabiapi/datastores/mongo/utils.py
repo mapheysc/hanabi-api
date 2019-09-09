@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
 from hanabiapi import exceptions
+from hanabiapi.datastores.dao import UtilsDAO
 
 
 def check_object_id(_type):
@@ -23,3 +24,13 @@ def check_object_id(_type):
             return view_func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+class MongoUtilsDAO(UtilsDAO):
+    """The DAO responseible for handling utility functions in Mongo."""
+
+    def populate(obj):
+        """Replace any reference field with a json representation."""
+        for key, value in obj:
+            print(key, value)
+        return obj
