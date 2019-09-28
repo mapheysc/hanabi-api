@@ -75,19 +75,8 @@ class MongoGameDAO(GameDAO):
         """
         _id = rest.database.db.games.insert_one(game).inserted_id
 
-        LOGGER.debug("Adding game to users list of owned games.")
-
-        try:
-            self.user_dao.update(
-                _id=user, as_model=True).owns(
-                    own_data={'game': ObjectId(_id), 'player_id': 0})
-        except exceptions.UserNotFound as unf:
-            LOGGER.debug("User could not be found. Deleting the game.")
-            self.delete(user, _id=_id)
-            raise unf
-
         LOGGER.debug("Creating meta game reference.")
-        self.meta_game_dao.create({
+        meta_game_id = self.meta_game_dao.create({
             'game_id': _id,
             'turn': game['turn'],
             'game_name': game['name'],
@@ -97,6 +86,20 @@ class MongoGameDAO(GameDAO):
             'num_players': len(game['players']),
             'players': [user]
         })
+
+        LOGGER.debug("Adding game to users list of owned games.")
+
+        try:
+            self.user_dao.update(
+                _id=user, as_model=True).owns(
+                    own_data={
+                        'game': ObjectId(_id),
+                        'player_id': 0,
+                        'meta_game': ObjectId(meta_game_id)})
+        except exceptions.UserNotFound as unf:
+            LOGGER.debug("User could not be found. Deleting the game.")
+            self.delete(user, _id=_id)
+            raise unf
 
         return str(_id)
 
@@ -133,6 +136,7 @@ class MongoGameDAO(GameDAO):
                 for i, game in enumerate(user['owns']):
                     del user['owns'][i]
                 user = {k: v for k, v in user.items() if k != '_id'}
+                print(user)
                 self.user_dao.update(user['_id'], user)
             self.meta_game_dao.delete()
             rest.database.db.games.remove()

@@ -77,8 +77,12 @@ class Users(flask.views.MethodView):
                 return abort(400, 'Game already has max amount of players')
             if ObjectId(user_id) in meta_game['players']:
                 return abort(400, 'You are already in the game.')
-            user['games'].append(
-                {'game': ObjectId(meta_game['game_id']), 'player_id': len(meta_game['players'])})
+            user['games'].append({
+                'game': ObjectId(meta_game['game_id']),
+                'player_id': len(meta_game['players']),
+                'meta_game': ObjectId(meta_game_id),
+                '_id': ObjectId(user_id)
+            })
             rest.database.db.users.update({'_id': ObjectId(user_id)}, user)
             meta_game = rest.database.db.metagames.update({'_id': ObjectId(meta_game_id)}, {
                 '$addToSet': {
