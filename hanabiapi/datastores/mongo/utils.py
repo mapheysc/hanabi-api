@@ -16,8 +16,12 @@ def check_object_id(_type):
                 try:
                     _id = kwargs['_id']
                 except KeyError:
-                    # _id must be args[0]
-                    _id = args[0]
+                    # _id must be args[1]
+                    if len(args) > 1:
+                        _id = args[1]
+                    else:
+                        # There is no id
+                        return view_func(*args, **kwargs)
                 ObjectId(_id)
             except InvalidId:
                 raise exceptions.NotFound(_type=_type)

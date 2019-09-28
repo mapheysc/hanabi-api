@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-VERSION = __import__('api').__VERSION__
+VERSION = __import__('hanabiapi').__VERSION__
 
 setup(name='Hanabi Api',
       version=VERSION,

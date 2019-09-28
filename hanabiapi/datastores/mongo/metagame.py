@@ -26,7 +26,7 @@ class MongoMetaGameDAO(MetaGameDAO):
         """
         raise NotImplementedError
 
-    @utils.check_object_id('meta game')
+    @utils.check_object_id(_type='meta game')
     def read(self, _id=None):
         """
         Read a meta game.
