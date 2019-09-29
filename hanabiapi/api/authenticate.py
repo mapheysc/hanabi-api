@@ -39,9 +39,11 @@ class Authenticate(flask.views.MethodView):
             return abort(400, 'Username must be present in body.')
 
         users = []
+        existed = True
         for user in rest.database.db.users.find({'name': username}):
             users.append(user)
         if len(users) == 0:
+            existed = False
             # create a user
             user = {'games': [], 'owns': [], 'name': username}
             _id = rest.database.db.users.insert_one(user).inserted_id
@@ -56,4 +58,4 @@ class Authenticate(flask.views.MethodView):
         token = create_access_token(identity=str(_id))
         LOGGER.debug('Generated access token for {}: {}'.format(username,
                                                                 token))
-        return flask.jsonify({'token': token})
+        return flask.jsonify({'token': token, 'existed': existed})
