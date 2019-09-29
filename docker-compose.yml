@@ -10,8 +10,8 @@ services:
      MONGO_INITDB_ROOT_PASSWORD: example
    networks:
      - internal_database
-   ports:
-     - 27017:27017
+  #  ports:
+  #    - 27017:27017
 
   hanabi:
     build:
