@@ -88,7 +88,6 @@ class MongoGameDAO(GameDAO):
         })
 
         LOGGER.debug("Adding game to users list of owned games.")
-        print(meta_game_id)
 
         try:
             self.user_dao.update(

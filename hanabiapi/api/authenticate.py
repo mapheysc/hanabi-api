@@ -24,8 +24,7 @@ class Authenticate(flask.views.MethodView):
     def get(self):
         """REST endpoint that checks if the given JWT is valid."""
         LOGGER.info("GET for endpoint: '/authenticate'")
-        return flask.jsonify({'msg': ('Congratulations on having a valid JWT, {}.'
-                                      .format(get_jwt_identity()))})
+        return flask.jsonify({'id': get_jwt_identity()})
 
     def post(self):
         """REST endpoint that authenticates a username."""
